@@ -1,0 +1,173 @@
+<?php
+
+/**
+ * @file
+ * dynetx theme hooks — ports WP dynetxdev2020 custom.js behaviours.
+ */
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function dynetx_preprocess_page(&$variables): void {
+  // Site-wide Duchenne Awareness Day alert bar, editable via block.
+  $variables['show_duchenne_alert'] = TRUE;
+  // Footer contact constants (as-is from WP footer).
+  $variables['dyne_email'] = 'info@dyne-tx.com';
+  $variables['dyne_phone'] = '781.786.8230';
+}
+
+/**
+ * Implements hook_preprocess_block().
+ */
+function dynetx_preprocess_block(&$variables): void {
+  if (($variables['plugin_id'] ?? '') !== 'page_title_block') {
+    return;
+  }
+
+  $node = \Drupal::routeMatch()->getParameter('node');
+  if ($node instanceof \Drupal\node\NodeInterface && in_array($node->bundle(), ['dyne_page', 'job'], TRUE)) {
+    $variables['content']['#access'] = FALSE;
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function dynetx_preprocess_node(&$variables): void {
+  $node = $variables['node'];
+  if ($node->bundle() === 'pipeline_program') {
+    $variables['#attached']['library'][] = 'dynetx/global';
+  }
+}
+
+/**
+ * Preprocess JSON-driven paragraph components: decode items/rows/sections
+ * in PHP (Twig has no json_decode filter in Drupal core).
+ */
+function _dyne_json_field($paragraph, string $field): array {
+  if (!$paragraph->hasField($field) || $paragraph->get($field)->isEmpty()) {
+    return [];
+  }
+  $decoded = json_decode($paragraph->get($field)->value, TRUE);
+  return is_array($decoded) ? $decoded : [];
+}
+
+/**
+ * Normalize a department or location to a stable selector value.
+ */
+function _dynetx_job_filter_key(string $value): string {
+  $value = mb_strtolower(trim($value));
+  $value = preg_replace('/[^a-z0-9]+/u', '-', $value);
+  return trim($value, '-');
+}
+
+/**
+ * Provide department-grouped job records to dynamic jobs-list Paragraphs.
+ */
+function _dynetx_job_groups(): array {
+  $department_order = [
+    'CCO',
+    'CLINICAL DEVELOPMENT',
+    'CLINICAL OPERATIONS',
+    'COMMERCIALIZATION',
+    'FINANCE',
+    'HUMAN RESOURCES',
+    'MEDICAL AFFAIRS',
+    'MEDICAL AFFAIRS - US',
+    'PHARMACOVIGILANCE & SAFETY',
+    'PLATFORM',
+    'PROGRAM MANAGEMENT',
+    'QUALITY',
+    'REGULATORY',
+    'REGULATORY - US',
+    'TECHNICAL DEVELOPMENT',
+    'TECHNICAL OPERATIONS',
+    'US AFFILIATE',
+    'US CUSTOMER ENGAGEMENT',
+    'US MARKET ACCESS & PATIENT SERVICES',
+    'US MARKETING',
+  ];
+  $department_weights = array_flip($department_order);
+  $storage = \Drupal::entityTypeManager()->getStorage('node');
+  $ids = $storage->getQuery()
+    ->accessCheck(TRUE)
+    ->condition('type', 'job')
+    ->condition('status', 1)
+    ->sort('field_department_group', 'ASC')
+    ->sort('field_open_position_weight', 'ASC')
+    ->sort('title', 'ASC')
+    ->execute();
+  $groups = [];
+  $locations = [];
+
+  foreach ($storage->loadMultiple($ids) as $job) {
+    $department = trim((string) $job->get('field_department_group')->value);
+    if ($department === '') {
+      $department = trim((string) $job->get('field_department_text')->value);
+    }
+    $department_key = mb_strtoupper($department);
+    $location = trim((string) $job->get('field_location_text')->value);
+    if (!isset($groups[$department_key])) {
+      $groups[$department_key] = [
+        'label' => $department,
+        'weight' => $department_weights[$department_key] ?? 999,
+        'jobs' => [],
+      ];
+    }
+    $groups[$department_key]['jobs'][] = [
+      'title' => $job->label(),
+      'url' => $job->toUrl('canonical')->toString(),
+      'location' => $location,
+      'location_filter' => _dynetx_job_filter_key($location),
+    ];
+    if ($location !== '') {
+      $locations[_dynetx_job_filter_key($location)] = $location;
+    }
+  }
+
+  uasort($groups, static function (array $left, array $right): int {
+    return ($left['weight'] <=> $right['weight']) ?: strcasecmp($left['label'], $right['label']);
+  });
+  natcasesort($locations);
+
+  $groups = array_map(static function (array $group): array {
+    $group['filter_key'] = _dynetx_job_filter_key($group['label']);
+    return $group;
+  }, array_values($groups));
+
+  return [
+    'groups' => $groups,
+    'departments' => array_map(static fn(array $group): array => [
+      'label' => $group['label'],
+      'filter_key' => $group['filter_key'],
+    ], $groups),
+    'locations' => array_map(static fn(string $filter_key, string $label): array => [
+      'label' => $label,
+      'filter_key' => $filter_key,
+    ], array_keys($locations), array_values($locations)),
+  ];
+}
+
+/**
+ * Implements hook_preprocess_paragraph() for all dyne_* components.
+ */
+function dynetx_preprocess_paragraph(&$variables): void {
+  /** @var \Drupal\paragraphs\Entity\Paragraph $paragraph */
+  $paragraph = $variables['paragraph'];
+  $variables['dyne_items'] = _dyne_json_field($paragraph, 'field_items_json');
+  $variables['dyne_rows'] = _dyne_json_field($paragraph, 'field_rows_json');
+  $variables['dyne_sections'] = _dyne_json_field($paragraph, 'field_sections_json');
+  $variables['dyne_is_home'] = \Drupal::service('path.matcher')->isFrontPage();
+  $variables['dyne_use_job_records'] = $paragraph->bundle() === 'dyne_jobs_list'
+    && $paragraph->hasField('field_dynamic_jobs')
+    && (bool) $paragraph->get('field_dynamic_jobs')->value;
+  $variables['dyne_job_groups'] = [];
+  $variables['dyne_job_departments'] = [];
+  $variables['dyne_job_locations'] = [];
+  if ($variables['dyne_use_job_records']) {
+    $job_data = _dynetx_job_groups();
+    $variables['dyne_job_groups'] = $job_data['groups'];
+    $variables['dyne_job_departments'] = $job_data['departments'];
+    $variables['dyne_job_locations'] = $job_data['locations'];
+  }
+}

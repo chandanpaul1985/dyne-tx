@@ -1,0 +1,90 @@
+{# templates/page.html.twig — 1:1 port of WP dynetxdev2020 header/footer chrome. #}
+{# Header nav (page.primary_menu) is the Drupal 'main' menu tree built in
+   dyne_migrate.install from live-site URLs; footer legal = 'footer' menu. #}
+<a href="#main-content" class="visually-hidden focusable skip-link">{{ 'Skip to main content'|t }}</a>
+<div class="visually-hidden">{{ 'Please ensure Javascript is enabled for purposes of website accessibility'|t }}</div>
+
+{% if page.alert_banner %}
+  <div class="duchenne-alert-bar" role="banner">
+    <div class="container d-flex align-items-center gap-3">
+      <img src="{{ path('<front>') }}{{ directory }}/images/logo-duchenne.svg" alt="{{ 'Duchenne Awareness Day logo'|t }}" class="img-fluid" height="40" />
+      <p class="mb-0">{{ 'On September 7, we join the Duchenne community for World Duchenne Awareness Day, making a difference by focusing on therapies that are designed to deliver functional improvement for individuals living with DMD.'|t }}</p>
+    </div>
+  </div>
+{% endif %}
+
+<header class="dyne-header sticky-top">
+  <div class="container d-flex align-items-center justify-content-between py-2">
+    <a href="{{ path('<front>') }}" class="logo" aria-label="Dyne home">
+      <img src="{{ path('<front>') }}{{ directory }}/logo.svg" height="50" class="img-fluid" alt="Dyne logo" />
+    </a>
+    <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#dyneMobileDrawer" aria-controls="dyneMobileDrawer" aria-label="{{ 'Open navigation'|t }}">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <nav class="dyne-nav navbar navbar-expand-lg d-none d-lg-flex" aria-label="Primary">
+      {{ page.primary_menu }}
+    </nav>
+  </div>
+  <div class="offcanvas offcanvas-end" id="dyneMobileDrawer" tabindex="-1" aria-labelledby="dyneMobileDrawerLabel">
+    <div class="offcanvas-header">
+      <strong id="dyneMobileDrawerLabel">{{ 'Menu'|t }}</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ 'Close'|t }}"></button>
+    </div>
+    <div class="offcanvas-body">
+      {{ page.mobile_drawer }}
+      <nav class="dyne-mobile-nav" aria-label="{{ 'Mobile primary'|t }}">{{ page.primary_menu }}</nav>
+    </div>
+  </div>
+</header>
+
+{{ page.breadcrumb }}
+{{ page.highlighted }}
+
+<main id="main-content" class="dyne-main">
+  <a id="main-content" tabindex="-1"></a>
+  {{ page.content }}
+</main>
+
+<footer class="dyne-footer mt-5" role="contentinfo">
+  <div class="stay-in-touch py-4">
+    <div class="container">
+      <div class="row">
+        <div class="col-12 col-lg-5 moto">{{ 'Stay in touch'|t }}</div>
+        <div class="col-12 col-lg-7">
+          {{ page.stay_in_touch }}
+          <ul class="nav foot-nav pb-2 pb-md-3">
+            <li class="nav-item"><a class="nav-link" href="mailto:info@dyne-tx.com">info@dyne-tx.com</a></li>
+            <li class="nav-item ms-auto"><a class="nav-link" href="tel:781-786-8230">781.786.8230</a></li>
+            <li class="nav-item socials mt-2 ms-auto">
+              <a class="nav-link me-3" target="_blank" rel="noopener" title="opens in a new window" href="https://www.linkedin.com/company/dynetx"><span class="sr-only">www.linkedin.com</span></a>
+              <a class="nav-link me-3" target="_blank" rel="noopener" title="opens in a new window" href="https://twitter.com/dyne_tx"><span class="sr-only">twitter.com</span></a>
+              <a class="nav-link me-3" target="_blank" rel="noopener" title="opens in a new window" href="https://www.facebook.com/DyneTherapeutic/"><span class="sr-only">www.facebook.com</span></a>
+              <a class="nav-link" target="_blank" rel="noopener" title="opens in a new window" href="https://www.youtube.com/@dynetherapeutics"><span class="sr-only">www.youtube.com</span></a>
+            </li>
+          </ul>
+          <div class="pt-2 pt-md-3 d-flex justify-content-between">
+            {{ page.footer }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="mb-0 mt-3">&copy; 2026 Dyne Therapeutics, Inc.</p>
+  </div>
+</footer>
+
+{# Global exit-link modal: "You are now leaving the Dyne Therapeutics corporate website". #}
+<div class="modal fade" id="dyneExitModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <p>{{ 'You are now leaving the Dyne Therapeutics corporate website'|t }}</p>
+        <div class="d-flex gap-2">
+          <a href="#" id="dyneExitContinue" class="btn btn-primary" target="_blank" rel="noopener">{{ 'Continue'|t }}</a>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ 'Stay on page'|t }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ page.modals }}

@@ -1,0 +1,27 @@
+global:
+  version: 1.1
+  css:
+    theme:
+      # Port of wp-content/themes/dynetxdev2020/css/styles.css + mdb.min.css
+      # Brand tokens: raleway* body stack, h1 ralewaymedium/#115DA9,
+      # btn-primary #E02426 (-> #0CB6D4 hover), footer #115DA9, text #19375B.
+      css/fonts.css: {}
+      css/style.css: {}
+  js:
+    js/exit-modal.js: {}
+    js/carousel.js: {}
+    js/custom.js: {}
+    js/navigation.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+    - bootstrap5/global
+
+exit-modal:
+  version: 1.x
+  js:
+    js/exit-modal.js: {}
+  dependencies:
+    - core/jquery
+    - core/once

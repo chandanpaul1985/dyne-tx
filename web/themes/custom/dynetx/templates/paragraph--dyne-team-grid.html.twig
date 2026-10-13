@@ -1,0 +1,26 @@
+{# Team grid component: WP leadership cards opening modal bios. #}
+{# Items JSON: [{name, role, photo, bio}] #}
+<section class="dyne-team container py-5">
+  {% if paragraph.field_anchor.value %}<a id="{{ paragraph.field_anchor.value }}" class="scroll-anchor"></a>{% endif %}
+  {% if paragraph.field_heading.value %}<h2 class="h1">{{ paragraph.field_heading.value }}</h2>{% endif %}
+  <div class="row">
+    {% for m in dyne_items %}
+      <div class="col-12 col-md-4 mb-4">
+        <div class="card h-100 text-center">
+          {% if m.photo %}<img class="card-img-top mx-auto" src="{{ m.photo }}" alt="{{ m.name }}" />{% endif %}
+          <div class="card-body">
+            <h3 class="h5">{{ m.name }}</h3>
+            <p>{{ m.role }}</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#teamModal-{{ loop.index }}">Open bio</button>
+          </div>
+        </div>
+        <div class="modal fade" id="teamModal-{{ loop.index }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body">
+            <h3>{{ m.name }}</h3><p><strong>{{ m.role }}</strong></p><p>{{ m.bio }}</p>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div></div></div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>

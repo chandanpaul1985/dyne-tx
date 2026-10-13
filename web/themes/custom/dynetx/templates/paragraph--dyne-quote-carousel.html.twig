@@ -1,0 +1,14 @@
+{# Quote carousel component: WP multi-carousel quotes. #}
+{# Items JSON: [{quote, author}] #}
+<section class="dyne-quotes container py-5">
+  {% if paragraph.field_heading.value %}<h2 class="h1">{{ paragraph.field_heading.value }}</h2>{% endif %}
+  <div id="dyneQuoteCarousel" class="carousel slide dyne-carousel" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      {% for q in dyne_items %}
+        <div class="carousel-item{{ loop.first ? ' active' : '' }}"><blockquote class="blockquote"><p>{{ q.quote }}</p><footer class="blockquote-footer">{{ q.author }}</footer></blockquote></div>
+      {% endfor %}
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#dyneQuoteCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+    <button class="carousel-control-next" type="button" data-bs-target="#dyneQuoteCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+  </div>
+</section>

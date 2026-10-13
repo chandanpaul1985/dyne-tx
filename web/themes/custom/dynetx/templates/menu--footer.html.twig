@@ -1,0 +1,8 @@
+{# Menu: footer legal links from Drupal 'footer' menu. #}
+{% if items %}
+  <ul class="nav copy flex-column">
+    {% for item in items %}
+      <li class="nav-item"><a class="nav-link" href="{{ item.url }}">{{ item.title }}</a></li>
+    {% endfor %}
+  </ul>
+{% endif %}

@@ -1,0 +1,14 @@
+{# News list component: WP .news-short rows (date/title/Read more). #}
+{# Items JSON: [{date, title, url}] #}
+<section class="dyne-news-list container py-5">
+  {% if paragraph.field_heading.value %}<h2 class="h1">{{ paragraph.field_heading.value }}</h2>{% endif %}
+  {% for item in dyne_items %}
+    <div class="col-12 card news-short">
+      <div class="row card-body align-items-center">
+        <h4 class="col-12 col-md-3 card-title text-nowrap">{{ item.date }}</h4>
+        <p class="col card-text"><a href="{{ item.url }}">{{ item.title }}</a></p>
+        <div class="col-12 col-md-auto"><a href="{{ item.url }}" class="btn btn-primary stretched-link">Read more</a></div>
+      </div>
+    </div>
+  {% endfor %}
+</section>

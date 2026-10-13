@@ -1,0 +1,54 @@
+{# Jobs grouped list component: WP careers grouped positions. #}
+{# Items JSON: [{title, department, location, url}] #}
+<section{{ attributes.addClass('dyne-jobs', 'container', 'py-5').setAttribute('id', paragraph.field_anchor.value|default('')) }}{% if dyne_use_job_records %} data-dyne-jobs-source="content"{% endif %}>
+  {% if paragraph.field_heading.value %}<h2 class="h1">{{ paragraph.field_heading.value }}</h2>{% endif %}
+  {% if paragraph.field_body_text.value %}<div class="dyne-jobs__intro">{{ content.field_body_text }}</div>{% endif %}
+  {% if dyne_use_job_records %}
+    <div class="dyne-jobs__filters" aria-label="{{ 'Filter open positions'|t }}">
+      <label>
+        <span>{{ 'Department'|t }}</span>
+        <select data-dyne-job-filter="department">
+          <option value="">{{ 'ALL'|t }}</option>
+          {% for department in dyne_job_departments %}
+            <option value="{{ department.filter_key }}">{{ department.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>{{ 'Location'|t }}</span>
+        <select data-dyne-job-filter="location">
+          <option value="">{{ 'ALL'|t }}</option>
+          {% for location in dyne_job_locations %}
+            <option value="{{ location.filter_key }}">{{ location.label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    {% for group in dyne_job_groups %}
+      <section class="dyne-jobs__group" data-dyne-job-group="{{ group.filter_key }}">
+        <h3>{{ group.label }}</h3>
+        <ul>
+          {% for job in group.jobs %}
+            <li data-dyne-job-location="{{ job.location_filter }}">
+              <a href="{{ job.url }}">{{ job.title }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% else %}
+      <p class="dyne-jobs__empty">{{ 'There are no open positions at this time.'|t }}</p>
+    {% endfor %}
+    {% if dyne_job_groups %}
+      <p class="dyne-jobs__empty" data-dyne-jobs-empty hidden>{{ 'No open positions match these filters.'|t }}</p>
+    {% endif %}
+  {% else %}
+    <ul class="list-group">
+      {% for j in dyne_items %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span><a href="{{ j.url }}">{{ j.title }}</a><br /><small>{{ j.department }} · {{ j.location }}</small></span>
+          <a href="{{ j.url }}" class="btn btn-primary">Apply</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</section>
